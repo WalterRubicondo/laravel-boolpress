@@ -85,26 +85,7 @@
                 </div>
 
                 <div class="row justify-content-center">
-      @foreach ($posts as $post)
-        <div class="col-md-3">
-            <div class="card">
-                <div class="card-header"><a href="{{route('posts.show', ['slug' => $post->slug])}}">{{$post->title}}</a></div>
-
-                <div class="card-body">
-                  {{$post->content}}
-
-                  <div class="">
-                    <a href="{{route('admin.posts.edit', ['post' => $post->id])}}">Edit</a>
-                    <form action="{{route('admin.posts.destroy', ['post' => $post->id])}}" method="post">
-                        @csrf
-                        @method('DELETE')
-                        <input type="submit" name="" value="Delete">
-                    </form>
-                  </div>
-                </div>
-            </div>
-        </div>
-      @endforeach
+                <a href="{{route('posts.index')}}">Posts</a>
     </div>
             </div>
         </div>

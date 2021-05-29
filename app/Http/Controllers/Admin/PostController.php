@@ -3,10 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Post;
+use App\Category;
+use App\Mail\SendNewMail;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
 
 class PostController extends Controller
 {
@@ -29,7 +33,9 @@ class PostController extends Controller
      */
     public function create()
     {
-        return view('admin.posts.create');
+      $categories = Category::all();
+
+      return view('admin.posts.create', compact('categories'));
     }
 
     /**
@@ -41,17 +47,27 @@ class PostController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'category_id' => 'exists:categories,id|nullable',
             'title' => 'required|string|max:255',
-            'content' => 'required|string'
+            'content' => 'required|string',
+            'cover' => 'image|max:100|nullable',
           ]);
     
           $data = $request->all();
+
+          $cover = null;
+          if (array_key_exists('cover', $data)) {
+            $cover = Storage::put('uploads', $data['cover']);
+          }
     
           $post = new Post();
           $post->fill($data);
     
           $post->slug = $this->generateSlug($post->title);
+          $post->cover = 'storage/'.$cover;
           $post->save();
+
+          Mail::to('mail@mail.it')->send(new SendNewMail());
     
           return redirect()->route('admin.posts.index');
     }
@@ -64,8 +80,8 @@ class PostController extends Controller
      */
     public function show($slug)
     {
-        $posts = Post::where('slug', $slug)->first();
-        return view('admin.posts.show')->with('posts', $posts);
+        $post = Post::where('slug', $slug)->first();
+        return view('admin.posts.show')->with('post', $post);
     }
 
     /**
@@ -76,7 +92,9 @@ class PostController extends Controller
      */
     public function edit(Post $post)
     {
-        return view('admin.posts.edit', compact('post'));
+        $categories = Category::all();
+
+        return view('admin.posts.edit', compact('post', 'categories'));
     }
 
     /**
@@ -89,14 +107,19 @@ class PostController extends Controller
     public function update(Request $request, Post $post)
     {
         $request->validate([
+            'category_id' => 'exists:categories,id|nullable',
             'title' => 'required|string|max:255',
             'content' => 'required|string'
           ]);
     
           $data = $request->all();
     
-          $data['slug'] = $this->generateSlug($data['title'], $post->title != $data['title']);
-    
+          $data['slug'] = $this->generateSlug($data['title'], $post->title != $data['title'], $post->slug);
+
+          if (array_key_exists('cover', $data)) {
+            $cover = Storage::put('uploads', $data['cover']);
+            $data['cover'] = 'storage/'.$cover;
+          }
     
           $post->update($data);
     
@@ -116,21 +139,20 @@ class PostController extends Controller
         return redirect()->route('admin.posts.index');
     }
 
-    private function generateSlug(string $title, bool $change = true)
+    private function generateSlug(string $title, bool $change = true, string $old_slug = '')
     {
-      $slug = Str::slug($title, '-');
-
       if (!$change) {
-        return $slug;
+        return $old_slug;
       }
-
+      
+      $slug = Str::slug($title, '-');
       $slug_base = $slug;
-      $contatore = 1;
+      $counter = 1;
 
       $post_with_slug = Post::where('slug', '=', $slug)->first();
       while($post_with_slug) {
-        $slug = $slug_base . '-' . $contatore;
-        $contatore++;
+        $slug = $slug_base . '-' . $counter;
+        $counter++;
 
         $post_with_slug = Post::where('slug', '=', $slug)->first();
       }

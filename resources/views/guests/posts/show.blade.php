@@ -72,8 +72,13 @@
             @endif
 
             <div class="content">
-
               {{$post->title}}
+              {{$post->content}}
+                Category: 
+                 @if ($post->category)
+              <a href="{{route('category.index', ['slug' => $post->category->slug])}}">{{$post->category->name}}</a>
+              @endif
+
             </div>
         </div>
     </body>

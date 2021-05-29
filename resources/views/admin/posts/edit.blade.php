@@ -9,9 +9,22 @@
     </div>
     <div class="row justify-content-center">
       <div class="col-md-8">
-          <form action="{{route('admin.posts.update', ['post' => $post->id])}}" method="post">
+          <form action="{{route('admin.posts.update', ['post' => $post->id])}}" method="post" enctype="multipart/form-data">
             @csrf
             @method('PATCH')
+
+            <div class="form-group">
+              <label for="category">Category</label>
+              <select class="form-control @error('category') is-invalid @enderror" id="category" name="category_id">
+                <option value="">Select</option>
+                @foreach($categories as $category)
+                  <option value="{{$category->id}}" {{$category->id == old('category_id', $post->category_id) ? 'selected' : ''}}>{{$category->name}}</option>
+                @endforeach
+              </select>
+              @error('category')
+                <small class="text-danger">{{ $message }}</small>
+              @enderror
+            </div>
 
             <div class="form-group">
               <label for="title">Title</label>
@@ -25,6 +38,17 @@
               <label for="content">Content</label>
               <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content"> {{ old('content', $post->content) }}</textarea>
               @error('content')
+                <small class="text-danger">{{ $message }}</small>
+              @enderror
+            </div>
+
+            <div>
+              <img src="{{asset($post->cover)}}" alt="">
+            </div>
+            <div class="form-group">
+              <label for="cover">Cover</label>
+              <input class="form-control-file @error('cover') is-invalid @enderror" id="cover" type='file' name="cover">
+              @error('cover')
                 <small class="text-danger">{{ $message }}</small>
               @enderror
             </div>

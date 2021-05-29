@@ -16,6 +16,7 @@
 
                     <p>You are logged in! </p>
                     <a href="{{route('admin.posts.index')}}">Go to Posts</a>
+                    <a href="{{route('admin.categories.index')}}">Go to Categories</a>
                 </div>
             </div>
         </div>
