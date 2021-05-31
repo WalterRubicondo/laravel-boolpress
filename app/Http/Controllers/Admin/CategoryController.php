@@ -127,12 +127,12 @@ class CategoryController extends Controller
       $slug_base = $slug;
       $counter = 1;
 
-      $post_with_slug = Post::where('slug', '=', $slug)->first();
-      while($post_with_slug) {
+      $category_with_slug = Category::where('slug', '=', $slug)->first();
+      while($category_with_slug) {
         $slug = $slug_base . '-' . $counter;
         $counter++;
 
-        $post_with_slug = Post::where('slug', '=', $slug)->first();
+        $category_with_slug = Category::where('slug', '=', $slug)->first();
       }
 
       return $slug;
